@@ -3,6 +3,7 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": false,
+    "esModuleInterop": true,
     "outDir": "./dist",
     "strict": true,
     "module": "CommonJS",
