@@ -1,5 +1,5 @@
-import * as dns from "dns";
-import { promisify } from "util";
+import * as dns from 'dns';
+import { promisify } from 'util';
 
 const lookupAsync = promisify(dns.lookup);
 

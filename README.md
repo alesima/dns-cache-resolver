@@ -25,12 +25,12 @@ Get started quickly with this example:
 import { DnsCache } from 'dns-cache';
 
 const dnsCache = new DnsCache({
-    ttl: 600, // Cache entries live for 600 seconds
-    maxEntries: 100 // Maximum of 100 entries in the cache
+  ttl: 600, // Cache entries live for 600 seconds
+  maxEntries: 100, // Maximum of 100 entries in the cache
 });
 
 // Lookup DNS and cache the result
-const ip = await dnsCache.lookup('example.com');
+const ip = await dnsCache.resolve('example.com');
 console.log(`IP Address: ${ip}`);
 ```
 
@@ -48,18 +48,18 @@ import { DnsCache } from 'dns-cache';
 
 // Initialize the DNS cache with custom settings
 const dnsCache = new DnsCache({
-    ttl: 300, // Cache TTL set to 300 seconds
-    maxEntries: 50 // Maximum cache entries set to 50
+  ttl: 300, // Cache TTL set to 300 seconds
+  maxEntries: 50, // Maximum cache entries set to 50
 });
 
 // Function to resolve DNS and utilize caching
 async function getIpAddress(hostname: string) {
-    try {
-        const ip = await dnsCache.lookup(hostname);
-        console.log(`IP address for ${hostname}: ${ip}`);
-    } catch (error) {
-        console.error(`Failed to resolve DNS for ${hostname}:`, error);
-    }
+  try {
+    const ip = await dnsCache.resolve(hostname);
+    console.log(`IP address for ${hostname}: ${ip}`);
+  } catch (error) {
+    console.error(`Failed to resolve DNS for ${hostname}:`, error);
+  }
 }
 
 // Example usage
@@ -78,41 +78,45 @@ import { DnsCache } from 'dns-cache';
 
 // Initialize the DNS cache with custom settings
 const dnsCache = new DnsCache({
-    ttl: 300, // Cache TTL set to 300 seconds
-    maxEntries: 50 // Maximum cache entries set to 50
+  ttl: 300, // Cache TTL set to 300 seconds
+  maxEntries: 50, // Maximum cache entries set to 50
 });
 
 // Create an Axios instance
 const axiosInstance = axios.create();
 
 // Add a request interceptor
-axiosInstance.interceptors.request.use(async config => {
+axiosInstance.interceptors.request.use(
+  async config => {
     // Extract hostname from the URL
     const url = new URL(config.url || '');
     const hostname = url.hostname;
 
     try {
-        // Lookup DNS and cache the result
-        const ip = await dnsCache.lookup(hostname);
-        // Replace hostname with IP address in the request URL
-        config.url = config.url.replace(hostname, ip);
+      // Lookup DNS and cache the result
+      const ip = await dnsCache.resolve(hostname);
+      // Replace hostname with IP address in the request URL
+      config.url = config.url.replace(hostname, ip);
     } catch (error) {
-        console.error(`Failed to resolve DNS for ${hostname}:`, error);
+      console.error(`Failed to resolve DNS for ${hostname}:`, error);
     }
 
     return config;
-}, error => {
+  },
+  error => {
     return Promise.reject(error);
-});
+  },
+);
 
 // Example request using the Axios instance
-axiosInstance.get('https://example.com/api/data')
-    .then(response => {
-        console.log('Data:', response.data);
-    })
-    .catch(error => {
-        console.error('Error fetching data:', error);
-    });
+axiosInstance
+  .get('https://example.com/api/data')
+  .then(response => {
+    console.log('Data:', response.data);
+  })
+  .catch(error => {
+    console.error('Error fetching data:', error);
+  });
 ```
 
 ## Contributing 🤝

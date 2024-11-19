@@ -1,5 +1,5 @@
-import { resolveHostname } from "../utils/dnsResolver";
-import { CacheEntry, DnsCacheOptions } from "./interfaces";
+import { resolveHostname } from '../utils/dnsResolver';
+import { CacheEntry, DnsCacheOptions } from './interfaces';
 
 export class DnsCache {
   private cache: Map<string, CacheEntry>;
