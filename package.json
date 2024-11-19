@@ -1,6 +1,6 @@
 {
   "name": "dns-cache-resolver",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A parametrizable DNS cache for Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
