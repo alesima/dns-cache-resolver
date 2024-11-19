@@ -25,6 +25,11 @@ export class DnsCache {
     }
 
     const address = await resolveHostname(hostname);
+
+    if (!address) {
+      throw new Error(`Failed to resolve hostname: ${hostname}`);
+    }
+
     this.cacheEntry(hostname, address);
 
     return address;
