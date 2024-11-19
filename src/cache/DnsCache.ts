@@ -64,4 +64,12 @@ export class DnsCache {
   remove(hostname: string): void {
     this.cache.delete(hostname);
   }
+
+  /**
+   * Lists all cached entries.
+   * @returns An array of cached entries.
+   */
+  list(): Array<[string, CacheEntry]> {
+    return Array.from(this.cache.entries());
+  }
 }
