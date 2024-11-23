@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.0.6 (2024-11-23)
+
+
+### Bug Fixes
+
+* dnsResolver tests adjustments ([6b8e795](https://github.com/alesima/dns-cache-resolver/commit/6b8e795dcb5c710f91b405bd8a5f1e482f85e36a))
+
 ### 1.0.5 (2024-11-19)
 
 
