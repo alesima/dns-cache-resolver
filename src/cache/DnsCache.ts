@@ -15,32 +15,39 @@ export class DnsCache {
   /**
    * Resolves a hostname and caches the result.
    * @param hostname  The hostname to resolve.
+   * @param family The address family (4 for IPv4, 6 for IPv6). Defaults to 4.
+   * @param timeout The timeout in milliseconds for the resolution. Optional.
    * @returns The resolved IP address.
    */
-  async resolve(hostname: string): Promise<string> {
-    const cachedEntry = this.cache.get(hostname);
+  async resolve(
+    hostname: string,
+    family: number = 4,
+    timeout?: number,
+  ): Promise<string> {
+    const cacheKey = `${hostname}:${family}`;
+    const cachedEntry = this.cache.get(cacheKey);
 
     if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
       return cachedEntry.address;
     }
 
-    const address = await resolveHostname(hostname);
+    const address = await resolveHostname(hostname, family, timeout);
 
     if (!address) {
       throw new Error(`Failed to resolve hostname: ${hostname}`);
     }
 
-    this.cacheEntry(hostname, address);
+    this.cacheEntry(cacheKey, address);
 
     return address;
   }
 
   /**
    * Adds a new entry to the DNS cache.
-   * @param hostname  The hostname to add.
+   * @param cacheKey  The key for the cache entry (hostname:family).
    * @param address  The IP address to add.
    */
-  private cacheEntry(hostname: string, address: string): void {
+  private cacheEntry(cacheKey: string, address: string): void {
     if (this.cache.size >= this.maxEntries) {
       const oldestKey = this.cache.keys().next().value;
 
@@ -49,7 +56,7 @@ export class DnsCache {
       }
     }
 
-    this.cache.set(hostname, {
+    this.cache.set(cacheKey, {
       address,
       expiresAt: Date.now() + this.ttl,
     });
@@ -65,9 +72,11 @@ export class DnsCache {
   /**
    * Removes a specific entry from the DNS cache.
    * @param hostname The hostname to remove.
+   * @param family The address family (4 for IPv4, 6 for IPv6). Defaults to 4.
    */
-  remove(hostname: string): void {
-    this.cache.delete(hostname);
+  remove(hostname: string, family: number = 4): void {
+    const cacheKey = `${hostname}:${family}`;
+    this.cache.delete(cacheKey);
   }
 
   /**

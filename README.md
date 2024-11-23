@@ -1,17 +1,25 @@
 # dns-cache-resolver
 
-Welcome to **dns-cache**—a cutting-edge, lightweight DNS cache for Node.js, meticulously crafted in TypeScript. 🚀
+**dns-cache-resolver** is a lightweight, performant DNS caching library for Node.js, designed with TypeScript for robust and type-safe applications. 🚀
+
+## Why Use dns-cache-resolver? 🧐
+
+- **Boost Performance**: Reduce repetitive DNS lookups with in-memory caching.
+- **Customizable**: Configure cache behavior with flexible TTL and size options.
+- **TypeScript First**: Enjoy the benefits of type safety and IDE autocompletion.
+- **Plug-and-Play**: Simple to integrate into existing applications.
 
 ## Features ✨
 
-- **Configurable TTL** 🕒: Tailor the time-to-live (TTL) for cached entries, ensuring optimal freshness.
-- **Maximum Entries** 📦: Control the cache size by setting a limit on the number of entries.
-- **In-Memory DNS Resolution Caching** 🧠: Boost performance with swift, in-memory DNS lookups.
-- **TypeScript Support** 💻: Enjoy type safety and predictability with full TypeScript support.
+- **Configurable TTL** 🕒: Set the time-to-live for cache entries.
+- **Maximum Entries** 📦: Control the number of entries in the cache.
+- **In-Memory Caching** 🧠: Speed up DNS resolutions with fast, local cache storage.
+- **IPv4 and IPv6 Support** 🌍: Resolve addresses for both address families.
+- **Timeout Handling** ⏱️: Avoid slow lookups with built-in resolution timeouts.
 
 ## Installation ⚙️
 
-Install via npm with ease:
+Install via npm:
 
 ```bash
 npm install dns-cache-resolver
@@ -19,118 +27,141 @@ npm install dns-cache-resolver
 
 ## Usage 📘
 
-Get started quickly with this example:
+Here’s a quick example:
 
 ```typescript
-import { DnsCache } from 'dns-cache';
+import { DnsCache } from 'dns-cache-resolver';
 
+// Initialize the DNS cache
 const dnsCache = new DnsCache({
-  ttl: 600, // Cache entries live for 600 seconds
-  maxEntries: 100, // Maximum of 100 entries in the cache
+  ttl: 60000, // Cache entries live for 60 seconds
+  maxEntries: 100, // Maximum of 100 cache entries
 });
 
-// Lookup DNS and cache the result
+// Resolve a hostname and cache the result
 const ip = await dnsCache.resolve('example.com');
 console.log(`IP Address: ${ip}`);
 ```
 
 ## Configuration Options 🛠️
 
-- `ttl` (number): Time-to-live for each cache entry in seconds.
-- `maxEntries` (number): Maximum number of entries allowed in the cache.
+| Option      | Type    | Default | Description                                              |
+|-------------|---------|---------|----------------------------------------------------------|
+| `ttl`       | number  | 60000   | Time-to-live for cache entries in milliseconds.          |
+| `maxEntries`| number  | 1000    | Maximum number of entries allowed in the cache.          |
 
-## Example Usage 💡
+## Examples 💡
 
-Here's a more detailed example to illustrate how you can integrate `dns-cache` into your Node.js project:
+### Basic Usage
 
 ```typescript
-import { DnsCache } from 'dns-cache';
+import { DnsCache } from 'dns-cache-resolver';
 
-// Initialize the DNS cache with custom settings
 const dnsCache = new DnsCache({
-  ttl: 300, // Cache TTL set to 300 seconds
-  maxEntries: 50, // Maximum cache entries set to 50
+  ttl: 30000, // 30 seconds TTL
+  maxEntries: 50, // Limit to 50 cache entries
 });
 
-// Function to resolve DNS and utilize caching
-async function getIpAddress(hostname: string) {
+async function getIp(hostname: string) {
   try {
     const ip = await dnsCache.resolve(hostname);
-    console.log(`IP address for ${hostname}: ${ip}`);
+    console.log(`Resolved IP for ${hostname}: ${ip}`);
   } catch (error) {
-    console.error(`Failed to resolve DNS for ${hostname}:`, error);
+    console.error(`Error resolving ${hostname}:`, error.message);
   }
 }
 
-// Example usage
-getIpAddress('example.com');
-getIpAddress('nodejs.org');
-getIpAddress('github.com');
+getIp('example.com');
+getIp('nodejs.org');
 ```
 
-## Integrating with Axios Interceptor 🌐
+### IPv4 and IPv6 Support
 
-To integrate `dns-cache` with an Axios interceptor, follow this example:
+```typescript
+const ipV4 = await dnsCache.resolve('example.com', 4); // IPv4
+console.log(`IPv4: ${ipV4}`);
+
+const ipV6 = await dnsCache.resolve('example.com', 6); // IPv6
+console.log(`IPv6: ${ipV6}`);
+```
+
+### Integrating with Axios 🌐
+
+You can use `dns-cache-resolver` with Axios to enhance performance and avoid DNS overhead:
 
 ```typescript
 import axios from 'axios';
-import { DnsCache } from 'dns-cache';
+import { DnsCache } from 'dns-cache-resolver';
 
-// Initialize the DNS cache with custom settings
 const dnsCache = new DnsCache({
-  ttl: 300, // Cache TTL set to 300 seconds
-  maxEntries: 50, // Maximum cache entries set to 50
+  ttl: 30000,
+  maxEntries: 100,
 });
 
 // Create an Axios instance
 const axiosInstance = axios.create();
 
-// Add a request interceptor
+// Add a DNS resolution interceptor
 axiosInstance.interceptors.request.use(
   async config => {
-    // Extract hostname from the URL
     const url = new URL(config.url || '');
     const hostname = url.hostname;
 
     try {
-      // Lookup DNS and cache the result
       const ip = await dnsCache.resolve(hostname);
-      // Replace hostname with IP address in the request URL
       config.url = config.url.replace(hostname, ip);
     } catch (error) {
-      console.error(`Failed to resolve DNS for ${hostname}:`, error);
+      console.error(`Failed to resolve DNS for ${hostname}: ${error.message}`);
     }
 
     return config;
   },
-  error => {
-    return Promise.reject(error);
-  },
+  error => Promise.reject(error)
 );
 
-// Example request using the Axios instance
+// Make a request
 axiosInstance
   .get('https://example.com/api/data')
-  .then(response => {
-    console.log('Data:', response.data);
-  })
-  .catch(error => {
-    console.error('Error fetching data:', error);
-  });
+  .then(response => console.log('Response:', response.data))
+  .catch(error => console.error('Error:', error));
+```
+
+### Clearing Cache
+
+```typescript
+dnsCache.clear(); // Remove all cached entries
+dnsCache.remove('example.com', 4); // Remove specific entry for IPv4
+```
+
+### Listing Cache Entries
+
+```typescript
+const entries = dnsCache.list();
+entries.forEach(([key, value]) => {
+  console.log(`Key: ${key}, Address: ${value.address}, Expires At: ${value.expiresAt}`);
+});
 ```
 
 ## Contributing 🤝
 
-We welcome and appreciate your contributions! Feel free to open issues or submit pull requests on [GitHub](https://github.com/alesima/dns-cache-resolver).
+We’re excited to have your contributions! Whether it’s fixing bugs, adding features, or improving documentation, feel free to open issues or submit pull requests on [GitHub](https://github.com/alesima/dns-cache-resolver).
+
+### How to Contribute
+
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -m 'Add some feature'`).
+4. Push to your branch (`git push origin feature/your-feature`).
+5. Open a pull request.
 
 ## License 📄
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ## Contact 📬
 
-Questions or feedback? Reach out to us at [alex@codingwithalex.com](mailto:alex@codingwithalex.com).
+For questions, feedback, or suggestions, reach out to **[Alex Silva](mailto:alex@codingwithalex.com)**.
 
 ## Acknowledgements 🙏
 
-A huge thanks to our contributors and users for their invaluable support and feedback!
+A huge thanks to our contributors and users for their continuous support and feedback!
