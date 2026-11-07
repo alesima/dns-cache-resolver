@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.0.7 (2026-11-07)
+
+
+### Bug Fixes
+
+* clear timeout timer, mock dns.lookup in tests, CI on Node 22, correct Axios docs ([6dce6ae](https://github.com/alesima/dns-cache-resolver/commit/6dce6ae41992fb96b0dba9c667445965bb71358b))
+
 ### 1.0.6 (2024-11-23)
 
 
