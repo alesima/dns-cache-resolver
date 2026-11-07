@@ -87,10 +87,13 @@ console.log(`IPv6: ${ipV6}`);
 
 ### Integrating with Axios 🌐
 
-You can use `dns-cache-resolver` with Axios to enhance performance and avoid DNS overhead:
+You can use `dns-cache-resolver` with Axios by plugging the cache into the
+agent's `lookup` function. This keeps TLS (SNI) and the `Host` header intact —
+do NOT rewrite the URL hostname with the resolved IP:
 
 ```typescript
 import axios from 'axios';
+import * as https from 'https';
 import { DnsCache } from 'dns-cache-resolver';
 
 const dnsCache = new DnsCache({
@@ -98,32 +101,23 @@ const dnsCache = new DnsCache({
   maxEntries: 100,
 });
 
-// Create an Axios instance
-const axiosInstance = axios.create();
-
-// Add a DNS resolution interceptor
-axiosInstance.interceptors.request.use(
-  async config => {
-    const url = new URL(config.url || '');
-    const hostname = url.hostname;
-
-    try {
-      const ip = await dnsCache.resolve(hostname);
-      config.url = config.url.replace(hostname, ip);
-    } catch (error) {
-      console.error(`Failed to resolve DNS for ${hostname}: ${error.message}`);
-    }
-
-    return config;
-  },
-  error => Promise.reject(error)
-);
+// Create an Axios instance with a cache-backed lookup
+const axiosInstance = axios.create({
+  httpsAgent: new https.Agent({
+    lookup: (hostname, options, callback) => {
+      dnsCache
+        .resolve(hostname)
+        .then(address => callback(null, address, 4))
+        .catch(callback);
+    },
+  }),
+});
 
 // Make a request
 axiosInstance
   .get('https://example.com/api/data')
   .then(response => console.log('Response:', response.data))
-  .catch(error => console.error('Error:', error));
+  .catch(error => console.error('Error:', error.message));
 ```
 
 ### Clearing Cache
@@ -160,7 +154,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact 📬
 
-For questions, feedback, or suggestions, reach out to **[Alex Silva](mailto:alex@codingwithalex.com)**.
+For questions, feedback, or suggestions, reach out to **[Alex Silva](mailto:hi@alexsilvas.com)**.
 
 ## Acknowledgements 🙏
 

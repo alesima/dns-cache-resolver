@@ -15,7 +15,7 @@
     "prepare": "npm run build",
     "release": "standard-version"
   },
-  "author": "Alex Silva <alex@codingwithalex.com>",
+  "author": "Alex Silva <hi@alexsilvas.com>",
   "license": "MIT",
   "repository": {
     "type": "git",

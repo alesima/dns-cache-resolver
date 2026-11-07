@@ -12,7 +12,9 @@ export const resolveHostname = async (
   family: number = 4,
   timeout?: number,
 ): Promise<string> => {
-  return new Promise((resolve, reject) => {
+  let timer: NodeJS.Timeout | undefined;
+
+  try {
     const lookupPromise = new Promise<string>((resolveLookup, rejectLookup) => {
       dns.lookup(hostname, { family }, (err, address) => {
         if (err) {
@@ -23,17 +25,26 @@ export const resolveHostname = async (
       });
     });
 
-    if (timeout) {
-      const timeoutPromise = new Promise<string>((_, rejectTimeout) =>
-        setTimeout(
-          () => rejectTimeout(new Error('DNS resolution timeout')),
-          timeout,
-        ),
-      );
-
-      Promise.race([lookupPromise, timeoutPromise]).then(resolve).catch(reject);
-    } else {
-      lookupPromise.then(resolve).catch(reject);
+    if (!timeout) {
+      return await lookupPromise;
     }
-  });
+
+    let rejectOnTimeout!: (reason: Error) => void;
+    const timeoutPromise = new Promise<string>((_, reject) => {
+      rejectOnTimeout = reject;
+    });
+    timer = setTimeout(
+      () => rejectOnTimeout(new Error('DNS resolution timeout')),
+      timeout,
+    );
+    if (typeof timer.unref === 'function') {
+      timer.unref();
+    }
+
+    return await Promise.race([lookupPromise, timeoutPromise]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
 };
