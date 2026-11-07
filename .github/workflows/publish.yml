@@ -24,7 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org/
 
       - name: Install dependencies
         run: npm install
@@ -54,6 +53,7 @@ jobs:
 
       - name: Publish package (npm Trusted Publishing, no static token)
         run: |
+          unset NODE_AUTH_TOKEN
           PKG=$(node -p "require('./package.json').name")
           VER=$(node -p "require('./package.json').version")
           if npm view "$PKG@$VER" version >/dev/null 2>&1; then
