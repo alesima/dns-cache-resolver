@@ -53,4 +53,11 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish package (npm Trusted Publishing, no static token)
-        run: npm publish
+        run: |
+          PKG=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          if npm view "$PKG@$VER" version >/dev/null 2>&1; then
+            echo "$PKG@$VER already on registry, skipping publish"
+          else
+            npm publish
+          fi
