@@ -36,10 +36,15 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-      - name: Bump version
+      - name: Bump version (skips if already released)
         run: |
-          npm run release
-          git push --follow-tags origin master
+          VERSION=$(node -p "require('./package.json').version")
+          if git rev-parse "v$VERSION" >/dev/null 2>&1 || git ls-remote --tags origin | grep -q "refs/tags/v$VERSION$"; then
+            echo "v$VERSION already released, skipping bump"
+          else
+            npm run release
+            git push --follow-tags origin master
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
