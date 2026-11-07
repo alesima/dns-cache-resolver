@@ -10,6 +10,9 @@ jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
 
     steps:
       - name: Checkout code
@@ -45,10 +48,9 @@ jobs:
             npm run release
             git push --follow-tags origin master
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish package
+      - name: Update npm for OIDC support
+        run: npm install -g npm@latest
+
+      - name: Publish package (npm Trusted Publishing, no static token)
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
